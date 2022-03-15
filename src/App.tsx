@@ -1,25 +1,25 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import './App.scss';
+import Navbar from './Navbar';
+import { Outlet } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
 
-function App() {
+function App(){
+  const checkAuthState = useAuthStore(state => state.checkAuthState);
+  useEffect(() => {
+    checkAuthState();
+  }, []);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <div className='bg-white border-bottom sticky-top'>
+        <div className='container'>
+          <Navbar/>
+        </div>
+      </div>
+      <main className="container bg-white flex-grow-1 p-3 p-md-4">
+        <Outlet/>
+      </main>
+    </>
   );
 }
 

@@ -1,0 +1,154 @@
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/scss/bootstrap';
+
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track:hover {
+  background-color: #dedede;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--bs-orange);
+  border-radius: 4px;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+}
+
+#logo {
+  width: 30px;
+}
+
+.fw-500 {
+  font-weight: 500;
+}
+
+.flex-center {
+  justify-content: center;
+  align-items: center;
+}
+
+.text-spacer {
+  padding-right: 4px;
+}
+
+.icon-small {
+  font-size: 1.2rem!important;
+}
+
+.vertical-middle {
+  vertical-align: middle;
+}
+
+.text-orange {
+  color: var(--bs-orange)!important;
+}
+
+.orange-underline {
+  text-decoration: underline var(--bs-orange);
+}
+
+.navbar-light .navbar-nav .nav-link.active {
+  font-weight: 500;
+}
+
+.navbar-light .navbar-nav .nav-link.active .material-icons {
+  color: var(--bs-orange);
+}
+
+.btn-orange {
+  @include button-variant($orange, $orange, $color: #fff, $active-color: #fff, $hover-color: #fff, $disabled-color: #fff);
+}
+
+.btn-outline-orange {
+  @include button-outline-variant($orange, $color-hover: #fff, $active-color: #ff);
+}
+
+.side-section-sticky {
+  --top: 56px;
+  top: var(--top);
+  overflow: auto;
+  max-height: calc(100vh - var(--top));
+  margin-top: -1.5rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.card.bg-light .form-control {
+  background-color: white;
+}
+
+.btn[data-bs-toggle="collapse"] {
+  box-shadow: none;
+}
+
+.btn[data-bs-toggle="collapse"] .material-icons {
+  transition: transform .35s, color .35s;
+}
+
+.btn[data-bs-toggle="collapse"]:not(.collapsed) .material-icons {
+  color: var(--bs-orange);
+  transform: rotate(180deg);
+}
+
+.cart-item-image {
+  width: 30px;
+  height: 30px;
+}
+
+@media (max-width: 330px) {
+  .cart-item-image {
+    display: none !important;
+  }
+}
+
+@media (min-width: 576px) {
+  .cart-item-image {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+
+/* -- home page -- */
+
+.main-page-divider {
+  color: var(--bs-orange);
+  opacity: .5;
+  margin: 2rem 0;
+  max-width: 750px;
+}
+
+@keyframes jump {
+  0% {
+    transform: translateY(0%);
+  }
+  12.5% {
+    transform: translateY(-75%);
+  }
+  25% {
+    transform: translateY(0%);
+  }
+}
+
+.waiting-dot {
+  display: inline-block;
+  width: .5rem;
+  height: .5rem;
+  margin-left: .5rem;
+  border-radius: 50%;
+  background-color: var(--bs-orange);
+  animation: jump 2s ease infinite;
+}
