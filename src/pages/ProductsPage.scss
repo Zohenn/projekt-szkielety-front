@@ -1,0 +1,10 @@
+.product-description {
+  --max-lines: 4;
+  white-space: pre-wrap;
+  max-height: calc(1.5rem * var(--max-lines));
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: var(--max-lines);
+  -webkit-box-orient: vertical;
+}

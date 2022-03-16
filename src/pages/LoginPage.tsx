@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 import BootstrapError from '../BootstrapError';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 const loginSchema = Yup.object().shape({
   email: Yup.string().email('Nieprawidłowy adres email').required('Wartość nie może być pusta'),
@@ -15,6 +16,9 @@ export default function LoginPage(){
 
   return (
     <div className='container'>
+      <Helmet>
+        <title>Logowanie</title>
+      </Helmet>
       <div className='row justify-content-center'>
         <div className='col-md-6'>
           <div className='card'>

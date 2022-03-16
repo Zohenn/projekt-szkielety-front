@@ -1,11 +1,12 @@
 import logo from './assets/logo.png';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { useCartStore } from './store/cartStore';
 
 export default function Navbar(){
   const location = useLocation();
-  const { isSignedIn } = useAuthStore();
-  console.log(isSignedIn());
+  const { isSignedIn, isAdmin, user, signOut } = useAuthStore();
+  const items = useCartStore(state => state.items);
 
   return (
     <nav className='navbar navbar-light justify-content-start p-0'>
@@ -21,7 +22,7 @@ export default function Navbar(){
             </Link>
           </li>
           <li className='nav-item'>
-            <Link className={`nav-link d-flex px-2 ${location.pathname === '/produkty' ? 'active' : ''}`}
+            <Link className={`nav-link d-flex px-2 ${location.pathname.startsWith('/produkty') ? 'active' : ''}`}
                   to='/produkty'>
               <span className='material-icons me-0 me-sm-2'>widgets</span>
               <span className='d-none d-sm-inline'>Produkty</span>
@@ -37,7 +38,42 @@ export default function Navbar(){
                 <Link className={`nav-link px-2 ${location.pathname === '/rejestracja' ? 'active text-orange' : ''}`}
                       to='/rejestracja'>Rejestracja</Link>
               </li>
-            </> : <></>
+            </> : <>
+              <li className='nav-item'>
+                <Link className={`nav-link d-flex px-2 ${location.pathname.startsWith('/zamowienia') ? 'active' : ''}`}
+                      to='/zamowienia'>
+                  <span className='material-icons me-0 me-sm-2'>inventory</span>
+                  <span className='d-none d-sm-inline'>Zamówienia</span>
+                </Link>
+              </li>
+              <li className='ms-auto'></li>
+              {isAdmin() ? null : <li className='nav-item'>
+                <Link className={`nav-link d-flex px-2 ${location.pathname.startsWith('/koszyk') ? 'active' : ''}`}
+                      to='/koszyk'>
+                <span className={`rounded me-1 px-1 text-orange bg-light border d-inline-flex flex-center ${items.length === 0 ? 'invisible' : ''}`}
+                      id='cart-item-count'
+                      style={{ lineHeight: '1.3em', fontWeight: 500 }}>{items.length}</span>
+                  <span className='material-icons'>shopping_cart</span>
+                </Link>
+              </li>}
+              <li className='nav-item dropdown'>
+                <a id='navbarDropdown' className='nav-link dropdown-toggle' href='#' role='button'
+                   data-bs-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                  {user!.name}
+                </a>
+                <div className='dropdown-menu position-absolute'
+                     aria-labelledby='navbarDropdown'
+                     style={{ left: 'auto', right: '-0.75rem' }}>
+                  <a className='dropdown-item' href="#"
+                     onClick={(event) => {
+                       event.preventDefault();
+                       signOut();
+                     }}>
+                    Wyloguj się
+                  </a>
+                </div>
+              </li>
+            </>
           }
         </ul>
       </div>

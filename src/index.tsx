@@ -6,23 +6,35 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import axios from 'axios';
+import * as bootstrap from 'bootstrap';
+import HomePage from './pages/HomePage';
+import ProductsPage from './pages/ProductsPage';
+import { HelmetProvider } from 'react-helmet-async';
 
-if(process.env.NODE_ENV !== 'production'){
-  axios.defaults.baseURL = 'http://localhost:8000'
-}
+window.bootstrap = bootstrap;
+
+axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+axios.defaults.withCredentials = true;
+// if(process.env.NODE_ENV !== 'production'){
+//   axios.defaults.baseURL = 'http://localhost:8000';
+// }
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<App/>}>
-          <Route index/>
-          <Route path='/produkty'/>
-          <Route path='/logowanie' element={<LoginPage/>}/>
-          <Route path='/rejestracja'/>
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <HelmetProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={<App/>}>
+            <Route index element={<HomePage/>}/>
+            <Route path='/produkty' element={<ProductsPage/>}/>
+            <Route path='/zamowienia'/>
+            <Route path='/koszyk'/>
+            <Route path='/logowanie' element={<LoginPage/>}/>
+            <Route path='/rejestracja'/>
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </HelmetProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

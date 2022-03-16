@@ -52,7 +52,15 @@ body {
   vertical-align: middle;
 }
 
+.object-fit-contain {
+  object-fit: contain;
+}
+
 .text-orange {
+  color: var(--bs-orange)!important;
+}
+
+.bg-orange {
   color: var(--bs-orange)!important;
 }
 
