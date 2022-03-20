@@ -2,7 +2,7 @@ import { Field, Form, Formik } from "formik";
 import * as Yup from 'yup';
 import BootstrapError from '../BootstrapError';
 import { useAuthStore } from '../store/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 const loginSchema = Yup.object().shape({
@@ -12,6 +12,7 @@ const loginSchema = Yup.object().shape({
 
 export default function LoginPage(){
   const signIn = useAuthStore(state => state.signIn);
+  const location = useLocation();
   const navigate = useNavigate();
 
   return (
@@ -29,7 +30,10 @@ export default function LoginPage(){
                 validationSchema={loginSchema}
                 onSubmit={(values, { setSubmitting }) => {
                   signIn(values.email, values.password)
-                    .then(() => navigate('/'))
+                    .then(() => {
+                      const ref = new URL(window.location.toString()).searchParams.get('ref');
+                      navigate(ref ?? '/');
+                    })
                     .finally(() => setSubmitting(false));
                 }}>
                 {({ errors, touched, isSubmitting }) => (

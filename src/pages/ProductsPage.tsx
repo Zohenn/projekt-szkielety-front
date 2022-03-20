@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import formatCurrency from '../utils/formatCurrency';
@@ -7,26 +7,15 @@ import { useCartStore } from '../store/cartStore';
 import './ProductsPage.scss';
 import { Helmet } from 'react-helmet-async';
 import ModalButton from '../components/ModalButton';
-import { Alert, Button, Modal, ModalDialog } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
+import PromiseHandler from '../components/PromiseHandler';
+import Pagination from '../components/Pagination';
 
-interface Category{
-  id: number;
-  name: string;
-}
-
-interface Product{
-  id: number;
-  name: string;
-  category: Category;
-  amount: number;
-  price: number;
-  description: string;
-  image: string;
-}
+type ProductAvailability = 'available' | 'unavailable';
 
 interface ProductFilters{
   category: number[];
-  availability?: 'available' | 'unavailable';
+  availability?: ProductAvailability;
 }
 
 interface ProductFiltersSectionProps{
@@ -36,9 +25,9 @@ interface ProductFiltersSectionProps{
 }
 
 function ProductFiltersSection({ categories, filters, onChange }: ProductFiltersSectionProps){
-  const changeCategory = (category: number) => {
+  const changeCategory = (category: number, value: boolean) => {
     let _categories;
-    if(filters.category.includes(category)){
+    if(!value){
       _categories = filters.category.filter((c) => c !== category)
     }else{
       _categories = [...filters.category];
@@ -62,7 +51,7 @@ function ProductFiltersSection({ categories, filters, onChange }: ProductFilters
                        id={`category-${category.id}`}
                        name='category[]'
                        checked={filters.category.includes(category.id)}
-                       onChange={() => changeCategory(category.id)}/>
+                       onChange={(e) => changeCategory(category.id, e.target.checked)}/>
                 <label className='form-check-label' htmlFor={`category-${category.id}`}>
                   {category.name}
                 </label>
@@ -159,7 +148,7 @@ function ProductSortSection({ sort, direction, onChange }: ProductSortSectionPro
 
 function ProductCard({ product }: { product: Product }){
   const { isSignedIn } = useAuthStore();
-  const { items: cartItems, } = useCartStore();
+  const { items: cartItems, addToCart } = useCartStore();
 
   return (
     <div className='card mb-4 overflow-hidden'>
@@ -192,6 +181,7 @@ function ProductCard({ product }: { product: Product }){
               <div className='ms-4 d-flex flex-column justify-content-end'>
                 <button
                   className={`btn text-nowrap add-to-cart d-inline-flex flex-center ${product.amount > 0 ? 'btn-orange' : 'btn-light'}`}
+                  onClick={() => addToCart(product.id)}
                   disabled={!isSignedIn() || product.amount === 0 || cartItems.includes(product.id)}
                   style={{ minWidth: '114px' }}>
                   {cartItems.includes(product.id) ? 'W koszyku' : 'Do koszyka'}
@@ -203,22 +193,20 @@ function ProductCard({ product }: { product: Product }){
                 } alert={(show, hide) =>
                   <Modal onHide={hide} show={show} scrollable={true}>
                     <div className='modal-header'>
-                      <img id='product-modal-image'
-                           className='object-fit-contain'
+                      <img className='object-fit-contain'
                            src={`/storage/products/${product.image}`}
                            alt={product.name}
                            style={{ height: '36px' }}/>
-                      <h5 className='modal-title mx-3' id='product-modal-name-container'>{product.name}</h5>
+                      <h5 className='modal-title mx-3'>{product.name}</h5>
                       <button className='btn-close' onClick={hide}/>
                     </div>
                     <div className='modal-body'>
-                      <p id='product-modal-desc-container' style={{ whiteSpace: 'pre-wrap' }}>
+                      <p style={{ whiteSpace: 'pre-wrap' }}>
                         {product.description}
                       </p>
                     </div>
                   </Modal>
                 }/>
-
               </div>
             </div>
           </div>
@@ -229,23 +217,21 @@ function ProductCard({ product }: { product: Product }){
 }
 
 export default function ProductsPage(){
-  const getEmptyFilters = () => ({ category: [] })
-
-  const location = useLocation();
-  const navigation = useNavigate();
-  const [page, setPage] = useState<number>(1);
-  const [filters, setFilters] = useState<ProductFilters>(getEmptyFilters());
-  const [sort, setSort] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<string>('');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  const fetchCategories = async () => {
-    const response = await axios.get('/api/categories');
-    setCategories(response.data);
+  const initFilters: (searchParams?: URLSearchParams) => ProductFilters = (searchParams) => {
+    const category: number[] = [];
+    searchParams?.getAll('category[]').forEach((c) => {
+      let categoryId = Number(c);
+      if(!isNaN(categoryId)){
+        category.push(categoryId);
+      }
+    });
+    return {
+      category,
+      availability: (searchParams?.get('availability') ?? undefined) as ProductAvailability | undefined
+    }
   }
 
-  const fetchProducts = async (filters: ProductFilters, sort: string, sortDirection: string) => {
+  const fetchProducts = async (filters: ProductFilters, sort: string, sortDirection: string, page: number) => {
     const searchParams = new URLSearchParams();
     filters.category.forEach((category) => searchParams.append('category[]', category.toString()));
     if(filters.availability){
@@ -257,14 +243,36 @@ export default function ProductsPage(){
     if(sortDirection){
       searchParams.append('sort_dir', sortDirection);
     }
+    searchParams.append('page', page.toString());
     navigation({ pathname: location.pathname, search: searchParams.toString() }, { replace: true });
     const response = await axios.get('/api/products', { params: searchParams });
-    setProducts(response.data.data);
+    const { data, ...pagination } = response.data;
+    setPagination(pagination);
+    setProducts(data);
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
+  const fetchCategories = async () => {
+    const response = await axios.get('/api/categories');
+    setCategories(response.data);
+  }
+
+  const location = useLocation();
+  const searchParams = new URL(window.location.toString()).searchParams
+  const navigation = useNavigate();
+  const [page, setPage] = useState<number>(1);
+  const [pagination, setPagination] = useState<Paginator>();
+  const [filters, setFilters] = useState<ProductFilters>(initFilters(searchParams));
+  const [sort, setSort] = useState<string>('');
+  const [sortDirection, setSortDirection] = useState<string>('');
+  const [productsPromise, setProductsPromise] = useState<Promise<any>>();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categoriesPromise, setCategoriesPromise] = useState<Promise<any>>();
+  const [categories, setCategories] = useState<Category[]>([]);
+
   useEffect(() => {
-    fetchCategories();
-    fetchProducts(filters, sort, sortDirection);
+    setProductsPromise(fetchProducts(filters, sort, sortDirection, page));
+    setCategoriesPromise(fetchCategories());
   }, []);
 
   return (
@@ -274,47 +282,52 @@ export default function ProductsPage(){
       </Helmet>
       <div className='row align-items-start' style={{ marginBottom: '-1.5rem' }}>
         <div className='col-3 sticky-top side-section-sticky'>
-          <form onReset={(e) => {
-            e.preventDefault();
-            setFilters(getEmptyFilters());
-            setSort('');
-            setSortDirection('');
-            setTimeout(() => fetchProducts(getEmptyFilters(), '', ''), 0);
-          }} onSubmit={(e) => {
-            e.preventDefault();
-            fetchProducts(filters, sort, sortDirection);
-          }}>
-            <ProductFiltersSection categories={categories}
-                                   filters={filters}
-                                   onChange={(_filters) => setFilters(_filters)}/>
-            <hr className='text-orange' style={{ height: '2px' }}/>
-            <ProductSortSection sort={sort} direction={sortDirection} onChange={(_sort, _direction) => {
-              setSort(_sort);
-              setSortDirection(_direction);
-            }}/>
-            <div className='d-grid gap-2 d-lg-flex justify-content-center gx-lg-1 text-center mt-3'>
-              <button className='btn btn-outline-orange' type='reset'>Wyczyść</button>
-              <button className='btn btn-orange' type='submit'>Zastosuj</button>
-            </div>
-          </form>
+          <PromiseHandler promise={categoriesPromise} onDone={() =>
+            <form onReset={(e) => {
+              e.preventDefault();
+              setFilters(initFilters());
+              setSort('');
+              setSortDirection('');
+              setPage(1);
+              setTimeout(() => setProductsPromise(fetchProducts(initFilters(), '', '', 1)), 0);
+            }} onSubmit={(e) => {
+              e.preventDefault();
+              setPage(1);
+              setProductsPromise(fetchProducts(filters, sort, sortDirection, 1));
+            }}>
+              <ProductFiltersSection categories={categories}
+                                     filters={filters}
+                                     onChange={(_filters) => {
+                                       setFilters(_filters);
+                                     }}/>
+              <hr className='text-orange' style={{ height: '2px' }}/>
+              <ProductSortSection sort={sort} direction={sortDirection} onChange={(_sort, _direction) => {
+                setSort(_sort);
+                setSortDirection(_direction);
+              }}/>
+              <div className='d-grid gap-2 d-lg-flex justify-content-center gx-lg-1 text-center mt-3'>
+                <button className='btn btn-outline-orange' type='reset'>Wyczyść</button>
+                <button className='btn btn-orange' type='submit'>Zastosuj</button>
+              </div>
+            </form>
+          }/>
         </div>
         <div className='col-9 pb-4'>
-          {products.map((product) => <ProductCard key={product.id} product={product}/>)}
+          <PromiseHandler promise={productsPromise}
+                          onDone={() =>
+                            <>
+                              {
+                                products.map((product) => <ProductCard key={product.id} product={product}/>)
+                              }
+                              <Pagination what='Produkty'
+                                          paginator={pagination!}
+                                          onPageChanged={(_page) => {
+                                            setPage(_page);
+                                            setProductsPromise(fetchProducts(filters, sort, sortDirection, _page));
+                                          }}/>
+                            </>
+                          }/>
           {/*{{ $products->links(null, ['what' => 'Produktów'])}}*/}
-        </div>
-      </div>
-      <div className='modal fade' id='product-modal'>
-        <div className='modal-dialog modal-dialog-scrollable'>
-          <div className='modal-content'>
-            <div className='modal-header'>
-              <img id='product-modal-image' src='#' alt='#' style={{ objectFit: 'contain', height: '36px' }}/>
-              <h5 className='modal-title mx-3' id='product-modal-name-container'/>
-              <button className='btn-close' data-bs-dismiss='modal'/>
-            </div>
-            <div className='modal-body'>
-              <p id='product-modal-desc-container' style={{ whiteSpace: 'pre-wrap' }}/>
-            </div>
-          </div>
         </div>
       </div>
       <div className='toast-container position-fixed bottom-0 end-0 p-3' style={{ zIndex: 11 }}>

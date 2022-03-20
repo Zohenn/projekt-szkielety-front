@@ -1,12 +1,17 @@
 import logo from './assets/logo.png';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useCartStore } from './store/cartStore';
 
 export default function Navbar(){
   const location = useLocation();
+  const navigate = useNavigate();
   const { isSignedIn, isAdmin, user, signOut } = useAuthStore();
   const items = useCartStore(state => state.items);
+
+  const toLogin = () => {
+    navigate({ pathname: '/logowanie', search: `ref=${location.pathname}${location.search}`})
+  }
 
   return (
     <nav className='navbar navbar-light justify-content-start p-0'>
@@ -31,8 +36,12 @@ export default function Navbar(){
           {
             !isSignedIn() ? <>
               <li className='nav-item ms-auto'>
-                <Link className={`nav-link px-2 ${location.pathname === '/logowanie' ? 'active text-orange' : ''}`}
-                      to='/logowanie'>Logowanie</Link>
+                <a className={`nav-link px-2 ${location.pathname === '/logowanie' ? 'active text-orange' : ''}`}
+                   href='/logowanie'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toLogin();
+                    }}>Logowanie</a>
               </li>
               <li className='nav-item'>
                 <Link className={`nav-link px-2 ${location.pathname === '/rejestracja' ? 'active text-orange' : ''}`}
@@ -64,7 +73,7 @@ export default function Navbar(){
                 <div className='dropdown-menu position-absolute'
                      aria-labelledby='navbarDropdown'
                      style={{ left: 'auto', right: '-0.75rem' }}>
-                  <a className='dropdown-item' href="#"
+                  <a className='dropdown-item' href='#'
                      onClick={(event) => {
                        event.preventDefault();
                        signOut();
