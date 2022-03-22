@@ -20,7 +20,7 @@ export default function PromiseHandler({ promise, onDone }: PromiseHandlerProps)
     }
   }, [promise]);
 
-  let element;
+  let element: ReactElement;
 
   switch(promiseState){
     case PromiseState.settled:

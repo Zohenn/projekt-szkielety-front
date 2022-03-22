@@ -13,6 +13,17 @@ interface Product{
   image: string;
 }
 
+interface Service {
+  id: string;
+  name: string;
+  price: number;
+}
+
+interface PaymentType {
+  id: number;
+  name: string;
+}
+
 interface PaginationLink{
   url: string | null;
   label: string;

@@ -1,29 +1,37 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface CartStore{
+type Services = 'assembly' | 'os_installation';
+
+interface CartStore {
   items: number[];
   services: {
-    assembly: boolean;
-    osInstallation: boolean;
+    [k in Services]: boolean;
   }
   addToCart: (id: number) => void;
   removeFromCart: (id: number) => void;
+  changeService: (name: Services, value: boolean) => void;
 }
 
 export const useCartStore = create<CartStore>(persist((set, get) => ({
   items: [],
   services: {
     assembly: false,
-    osInstallation: false,
+    os_installation: false,
   },
-  addToCart: (id: number) => {
+
+  addToCart: (id) => {
     const items = get().items;
-    if(!items.includes(id)){
+    if (!items.includes(id)) {
       set({ items: [...get().items, id] });
     }
   },
-  removeFromCart: (id: number) => {
+
+  removeFromCart: (id) => {
     set({ items: get().items.filter((item) => item !== id) });
+  },
+
+  changeService: (name, value) => {
+    set({ services: { ...get().services, [name]: value } });
   }
 }), { name: 'cart' }));

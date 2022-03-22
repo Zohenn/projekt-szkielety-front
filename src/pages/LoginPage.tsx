@@ -31,8 +31,7 @@ export default function LoginPage(){
                 onSubmit={(values, { setSubmitting }) => {
                   signIn(values.email, values.password)
                     .then(() => {
-                      const ref = new URL(window.location.toString()).searchParams.get('ref');
-                      navigate(ref ?? '/');
+                      navigate((location.state as { ref?: Location }).ref ?? '/');
                     })
                     .finally(() => setSubmitting(false));
                 }}>

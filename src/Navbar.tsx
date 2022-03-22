@@ -10,7 +10,7 @@ export default function Navbar(){
   const items = useCartStore(state => state.items);
 
   const toLogin = () => {
-    navigate({ pathname: '/logowanie', search: `ref=${location.pathname}${location.search}`})
+    navigate({ pathname: '/logowanie' }, { state: { ref: location }})
   }
 
   return (

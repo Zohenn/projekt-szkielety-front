@@ -11,6 +11,7 @@ import HomePage from './pages/HomePage';
 import ProductsPage from './pages/ProductsPage';
 import { HelmetProvider } from 'react-helmet-async';
 import CartPage from './pages/CartPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 window.bootstrap = bootstrap;
 
@@ -29,7 +30,11 @@ ReactDOM.render(
             <Route index element={<HomePage/>}/>
             <Route path='/produkty' element={<ProductsPage/>}/>
             <Route path='/zamowienia'/>
-            <Route path='/koszyk' element={<CartPage/>}/>
+            <Route path='/koszyk' element={
+              <ProtectedRoute>
+                <CartPage/>
+              </ProtectedRoute>
+            }/>
             <Route path='/logowanie' element={<LoginPage/>}/>
             <Route path='/rejestracja'/>
           </Route>
