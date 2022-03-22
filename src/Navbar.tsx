@@ -77,6 +77,7 @@ export default function Navbar(){
                      onClick={(event) => {
                        event.preventDefault();
                        signOut();
+                       navigate('/');
                      }}>
                     Wyloguj się
                   </a>

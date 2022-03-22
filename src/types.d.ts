@@ -13,15 +13,47 @@ interface Product{
   image: string;
 }
 
+type Services = 'assembly' | 'os_installation';
+
 interface Service {
   id: string;
-  name: string;
+  name: Services;
   price: number;
 }
 
 interface PaymentType {
   id: number;
   name: string;
+}
+
+interface OrderStatus {
+  id: number;
+  name: string;
+}
+
+interface OrderDetails {
+  id: number;
+  price: number;
+  product: Product;
+}
+
+type OrderServices = Record<Services, boolean>;
+
+interface Order extends OrderServices{
+  id: number;
+  name: string;
+  surname: string;
+  address: string;
+  postal_code: string;
+  city: string;
+  phone: string;
+  value: number;
+  date: Date;
+  payment_type: PaymentType;
+  order_status: OrderStatus;
+
+  // [k: Services]: boolean;
+  details: OrderDetails[];
 }
 
 interface PaginationLink{
@@ -38,4 +70,8 @@ interface Paginator{
   per_page: number;
   prev_page_url: string | null;
   total: number;
+}
+
+interface PaginationFor<T> extends Paginator {
+  data: T[];
 }

@@ -1,8 +1,6 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type Services = 'assembly' | 'os_installation';
-
 interface CartStore {
   items: number[];
   services: {
@@ -11,6 +9,7 @@ interface CartStore {
   addToCart: (id: number) => void;
   removeFromCart: (id: number) => void;
   changeService: (name: Services, value: boolean) => void;
+  clear: () => void;
 }
 
 export const useCartStore = create<CartStore>(persist((set, get) => ({
@@ -33,5 +32,9 @@ export const useCartStore = create<CartStore>(persist((set, get) => ({
 
   changeService: (name, value) => {
     set({ services: { ...get().services, [name]: value } });
+  },
+
+  clear: () => {
+    set({ services: { assembly: false, os_installation: false }, items: [] })
   }
 }), { name: 'cart' }));

@@ -8,10 +8,12 @@ import LoginPage from './pages/LoginPage';
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
 import HomePage from './pages/HomePage';
-import ProductsPage from './pages/ProductsPage';
+import ProductsPage from './pages/products/ProductsPage';
 import { HelmetProvider } from 'react-helmet-async';
-import CartPage from './pages/CartPage';
+import CartPage from './pages/cart/CartPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import OrdersPage from './pages/orders/OrdersPage';
+import RegisterPage from './pages/RegisterPage';
 
 window.bootstrap = bootstrap;
 
@@ -29,14 +31,18 @@ ReactDOM.render(
           <Route path='/' element={<App/>}>
             <Route index element={<HomePage/>}/>
             <Route path='/produkty' element={<ProductsPage/>}/>
-            <Route path='/zamowienia'/>
+            <Route path='/zamowienia' element={
+              <ProtectedRoute>
+                <OrdersPage/>
+              </ProtectedRoute>
+            }/>
             <Route path='/koszyk' element={
               <ProtectedRoute>
                 <CartPage/>
               </ProtectedRoute>
             }/>
             <Route path='/logowanie' element={<LoginPage/>}/>
-            <Route path='/rejestracja'/>
+            <Route path='/rejestracja' element={<RegisterPage/>}/>
           </Route>
         </Routes>
       </BrowserRouter>
