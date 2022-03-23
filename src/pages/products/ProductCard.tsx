@@ -48,7 +48,7 @@ export function ProductCard({ product }: { product: Product }) {
                   <button className='btn product-details btn-outline-orange mt-2'
                           onClick={onClick}>Szczegóły
                   </button>
-                } alert={(show, hide) =>
+                } modal={(show, hide) =>
                   <Modal onHide={hide} show={show} scrollable={true}>
                     <div className='modal-header'>
                       <img className='object-fit-contain'

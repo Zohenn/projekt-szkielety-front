@@ -22,7 +22,7 @@ export default function CartPage() {
     if (items.length > 0) {
       const searchParams = new URLSearchParams();
       items.forEach((item) => searchParams.append('id[]', item.toString()));
-      const response = await axios.get('/api/product', { params: searchParams });
+      const response = await axios.get('/api/products', { params: searchParams });
       setProducts(response.data);
     }
   }

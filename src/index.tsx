@@ -14,6 +14,7 @@ import CartPage from './pages/cart/CartPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import OrdersPage from './pages/orders/OrdersPage';
 import RegisterPage from './pages/RegisterPage';
+import CategoriesPage from './pages/categories/CategoriesPage';
 
 window.bootstrap = bootstrap;
 
@@ -31,6 +32,11 @@ ReactDOM.render(
           <Route path='/' element={<App/>}>
             <Route index element={<HomePage/>}/>
             <Route path='/produkty' element={<ProductsPage/>}/>
+            <Route path='/kategorie' element={
+              <ProtectedRoute>
+                <CategoriesPage/>
+              </ProtectedRoute>
+            }/>
             <Route path='/zamowienia' element={
               <ProtectedRoute>
                 <OrdersPage/>

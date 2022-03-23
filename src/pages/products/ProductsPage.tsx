@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './ProductsPage.scss';
 import { Helmet } from 'react-helmet-async';
@@ -8,23 +8,34 @@ import Pagination from '../../components/Pagination';
 import { ProductAvailability, ProductFilters, ProductFiltersSection } from './ProductFiltersSection';
 import { ProductSortSection } from './ProductSortSection';
 import { ProductCard } from './ProductCard';
+import { Form, Formik } from 'formik';
+import ReactDOM from 'react-dom';
+import { useAuthStore } from '../../store/authStore';
+import formatCurrency from '../../utils/formatCurrency';
 
 export default function ProductsPage() {
   const initFilters: (searchParams?: URLSearchParams) => ProductFilters = (searchParams) => {
-    const category: number[] = [];
-    searchParams?.getAll('category[]').forEach((c) => {
-      let categoryId = Number(c);
-      if (!isNaN(categoryId)) {
-        category.push(categoryId);
-      }
-    });
     return {
-      category,
+      category: searchParams?.getAll('category[]') ?? [],
       availability: (searchParams?.get('availability') ?? undefined) as ProductAvailability | undefined
     }
   }
 
-  const fetchProducts = async (filters: ProductFilters, sort: string, sortDirection: string, page: number) => {
+  const location = useLocation();
+  const searchParams = new URL(window.location.toString()).searchParams
+  const navigate = useNavigate();
+  const isAdmin = useAuthStore(state => state.user)?.admin ?? false;
+  const [page, setPage] = useState<number>(1);
+  const [paginator, setPaginator] = useState<Paginator>();
+  const [filters, setFilters] = useState<ProductFilters>(initFilters(searchParams));
+  const [sort, setSort] = useState<string>(searchParams.get('sort') ?? '');
+  const [sortDirection, setSortDirection] = useState<string>(searchParams.get('sort_dir') ?? '');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsPromise, setProductsPromise] = useState<Promise<any>>();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesPromise, setCategoriesPromise] = useState<Promise<any>>();
+
+  const fetchProducts = useCallback(async () => {
     const searchParams = new URLSearchParams();
     filters.category.forEach((category) => searchParams.append('category[]', category.toString()));
     if (filters.availability) {
@@ -43,28 +54,18 @@ export default function ProductsPage() {
     setPaginator(pagination);
     setProducts(data);
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-  }
+  }, [filters, sort, sortDirection, page]);
 
   const fetchCategories = async () => {
     const response = await axios.get('/api/categories');
     setCategories(response.data);
   }
 
-  const location = useLocation();
-  const searchParams = new URL(window.location.toString()).searchParams
-  const navigate = useNavigate();
-  const [page, setPage] = useState<number>(1);
-  const [paginator, setPaginator] = useState<Paginator>();
-  const [filters, setFilters] = useState<ProductFilters>(initFilters(searchParams));
-  const [sort, setSort] = useState<string>('');
-  const [sortDirection, setSortDirection] = useState<string>('');
-  const [productsPromise, setProductsPromise] = useState<Promise<any>>();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categoriesPromise, setCategoriesPromise] = useState<Promise<any>>();
-  const [categories, setCategories] = useState<Category[]>([]);
+  useEffect(() => {
+    setProductsPromise(fetchProducts());
+  }, [fetchProducts]);
 
   useEffect(() => {
-    setProductsPromise(fetchProducts(filters, sort, sortDirection, page));
     setCategoriesPromise(fetchCategories());
   }, []);
 
@@ -74,53 +75,106 @@ export default function ProductsPage() {
         <title>Produkty</title>
       </Helmet>
       <div className='row align-items-start' style={{ marginBottom: '-1.5rem' }}>
-        <div className='col-3 sticky-top side-section-sticky'>
+        <div className='col-12 col-sm-3 sticky-top side-section-sticky'>
+          { isAdmin ?
+            <div className='d-grid gap-2 mb-4'>
+              <Link to='/produkty/dodaj' className='btn btn-outline-orange'>Nowy produkt</Link>
+              <Link to='/kategorie' className='btn btn-outline-orange'>Kategorie</Link>
+            </div> : null
+          }
           <PromiseHandler promise={categoriesPromise} onDone={() =>
-            <form onReset={(e) => {
-              e.preventDefault();
-              setFilters(initFilters());
-              setSort('');
-              setSortDirection('');
-              setPage(1);
-              setTimeout(() => setProductsPromise(fetchProducts(initFilters(), '', '', 1)), 0);
-            }} onSubmit={(e) => {
-              e.preventDefault();
-              setPage(1);
-              setProductsPromise(fetchProducts(filters, sort, sortDirection, 1));
-            }}>
-              <ProductFiltersSection categories={categories}
-                                     filters={filters}
-                                     onChange={(_filters) => {
-                                       setFilters(_filters);
-                                     }}/>
-              <hr className='text-orange' style={{ height: '2px' }}/>
-              <ProductSortSection sort={sort} direction={sortDirection} onChange={(_sort, _direction) => {
-                setSort(_sort);
-                setSortDirection(_direction);
-              }}/>
-              <div className='d-grid gap-2 d-lg-flex justify-content-center gx-lg-1 text-center mt-3'>
-                <button className='btn btn-outline-orange' type='reset'>Wyczyść</button>
-                <button className='btn btn-orange' type='submit'>Zastosuj</button>
-              </div>
-            </form>
+            <Formik
+              initialValues={{ filters: initFilters(), sort: sort, sortDirection: sortDirection }}
+              onReset={(values) => {
+                setFilters(initFilters());
+                setSort('');
+                setSortDirection('');
+                setPage(1);
+              }}
+              onSubmit={(values, { setSubmitting }) => {
+                ReactDOM.unstable_batchedUpdates(() => {
+                  setFilters(values.filters);
+                  setSort(values.sort);
+                  setSortDirection(values.sortDirection);
+                  setPage(1);
+                })
+                setSubmitting(false);
+              }}>
+              <Form>
+                <ProductFiltersSection categories={categories}/>
+                <hr className='text-orange' style={{ height: '2px' }}/>
+                <ProductSortSection/>
+                <div className='d-grid gap-2 d-lg-flex justify-content-center gx-lg-1 text-center mt-3'>
+                  <button className='btn btn-outline-orange' type='reset'>Wyczyść</button>
+                  <button className='btn btn-orange' type='submit'>Zastosuj</button>
+                </div>
+              </Form>
+            </Formik>
           }/>
         </div>
-        <div className='col-9 pb-4'>
+        <div className='col-12 col-sm-9 pb-4'>
           <PromiseHandler promise={productsPromise}
                           onDone={() =>
-                            <>
-                              {
-                                products.map((product) => <ProductCard key={product.id} product={product}/>)
-                              }
-                              <Pagination what='Produkty'
-                                          paginator={paginator!}
-                                          onPageChanged={(_page) => {
-                                            setPage(_page);
-                                            setProductsPromise(fetchProducts(filters, sort, sortDirection, _page));
-                                          }}/>
-                            </>
+                            isAdmin ?
+                              <div className='table-responsive'>
+                                <table className='table table-hover' style={{ verticalAlign: 'middle' }}>
+                                  <thead>
+                                    <tr>
+                                      <th scope='col'></th>
+                                      <th scope='col'>Nazwa</th>
+                                      <th scope='col'>Kategoria</th>
+                                      <th scope='col'>Cena</th>
+                                      <th scope='col'>Stan</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {products.map((product) =>
+                                      <tr className='position-relative'>
+                                        <td>
+                                          <a href='#' className='stretched-link'>
+                                            <span className='d-flex flex-center border rounded p-1 bg-white'
+                                                  style={{ width: '3rem', height: '3rem' }}>
+                                              <img className='w-100 h-100 object-fit-contain'
+                                                   src={`/storage/products/${product.image}`}
+                                                   alt={product.name}/>
+                                            </span>
+                                          </a>
+                                        </td>
+                                        <td>{product.name}</td>
+                                        <td className='text-muted'>{product.category.name}</td>
+                                        <td className='text-nowrap'>
+                                          <span className='text-muted'>{formatCurrency(product.price)}</span>
+                                          <span className='text-orange'>zł</span>
+                                        </td>
+                                        <td>{product.amount}</td>
+                                      </tr>
+                                    )}
+                                    {products.length === 0 ?
+                                      <tr>
+                                        <td colSpan={5} className='text-center text-muted'>Brak wyników</td>
+                                      </tr> : null
+                                    }
+                                  </tbody>
+                                  <tfoot>
+                                    <tr>
+                                      <th colSpan={5}>
+                                        <Pagination what={'Produktów'}
+                                                    paginator={paginator!}
+                                                    onPageChanged={(_page) => setPage(_page)}/>
+                                      </th>
+                                    </tr>
+                                  </tfoot>
+                                </table>
+                              </div> :
+                              <>
+                                {products.map((product) => <ProductCard key={product.id} product={product}/>)}
+                                <Pagination what='Produkty'
+                                            paginator={paginator!}
+                                            onPageChanged={(_page) => {
+                                              setPage(_page);
+                                            }}/>
+                              </>
                           }/>
-          {/*{{ $products->links(null, ['what' => 'Produktów'])}}*/}
         </div>
       </div>
       <div className='toast-container position-fixed bottom-0 end-0 p-3' style={{ zIndex: 11 }}>

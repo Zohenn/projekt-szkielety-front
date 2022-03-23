@@ -39,7 +39,7 @@ function LastOrders() {
           <tbody>
             {
               lastOrders.map((order) =>
-                <tr className='position-relative text-nowrap'>
+                <tr key={order.id} className='position-relative text-nowrap'>
                   {/* todo */}
                   <td>{order.id}<a href='#' className='stretched-link'></a></td>
                   <td>{order.date.toLocaleString()}</td>

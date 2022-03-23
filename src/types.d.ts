@@ -1,6 +1,7 @@
 interface Category{
   id: number;
   name: string;
+  products_exists?: boolean;
 }
 
 interface Product{
