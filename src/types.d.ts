@@ -16,8 +16,8 @@ interface Product{
 type Services = 'assembly' | 'os_installation';
 
 interface Service {
-  id: string;
-  name: Services;
+  id: Services;
+  name: string;
   price: number;
 }
 

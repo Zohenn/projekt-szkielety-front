@@ -28,7 +28,7 @@ export default function CartPage() {
   }
 
   const fetchPaymentTypes = async () => {
-    const response = await axios.get<PaymentType[]>('/api/paymentType');
+    const response = await axios.get<PaymentType[]>('/api/paymentTypes');
     setPaymentTypes(response.data);
   }
 

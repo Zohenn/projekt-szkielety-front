@@ -7,7 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import axios from 'axios';
 import * as bootstrap from 'bootstrap';
-import HomePage from './pages/HomePage';
+import HomePage from './pages/home/HomePage';
 import ProductsPage from './pages/products/ProductsPage';
 import { HelmetProvider } from 'react-helmet-async';
 import CartPage from './pages/cart/CartPage';

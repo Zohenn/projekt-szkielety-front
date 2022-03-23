@@ -27,7 +27,7 @@ export default function PromiseHandler({ promise, onDone }: PromiseHandlerProps)
       element = onDone();
       break;
     case PromiseState.error:
-      element = <span>Error</span>;
+      element = <span>W trakcie ładowania wystąpił błąd</span>;
       break;
     default:
       element = <div className='w-100 h-100 flex-grow-1 d-flex flex-center'>

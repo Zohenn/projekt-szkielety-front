@@ -14,7 +14,7 @@ export default function Summary({ cartValue }: { cartValue: number }) {
   const orderValue = cartValue + (cartServices.assembly ? assemblyPrice : 0) + (cartServices.os_installation ? osInstallationPrice : 0);
 
   const fetchServices = async () => {
-    const response = await axios.get<Service[]>('/api/service');
+    const response = await axios.get<Service[]>('/api/services');
     setServices(response.data);
   }
 
