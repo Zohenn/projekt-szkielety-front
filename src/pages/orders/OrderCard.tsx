@@ -21,7 +21,8 @@ export default function OrderCard({ order }: { order: Order }) {
       <div>
         {
           order.details.map((detail, index) =>
-            <div className={`d-flex align-items-center py-2 ${index !== order.details.length - 1 ? 'border-bottom' : ''}`}
+            <div key={detail.id}
+                 className={`d-flex align-items-center py-2 ${index !== order.details.length - 1 ? 'border-bottom' : ''}`}
                  style={{ borderColor: 'var(--bs-orange)!important' }}>
               <div className='ms-2 ms-sm-3' style={{ minWidth: '16px' }}>{index + 1}</div>
               <div className='d-flex align-items-center ms-1 ms-sm-2 flex-shrink-0 p-1 cart-item-image border rounded bg-white'>
@@ -57,7 +58,7 @@ export default function OrderCard({ order }: { order: Order }) {
               </span>
             </> : null
         }
-        { (order.assembly || order.os_installation) ? <span className='text-orange mx-2'>|</span> : null}
+        {(order.assembly || order.os_installation) ? <span className='text-orange mx-2'>|</span> : null}
         <span className='text-spacer fw-500'>Razem:</span>
         <span className='fw-500'>
           <span className='text-muted'>{formatCurrency(order.value)}</span>

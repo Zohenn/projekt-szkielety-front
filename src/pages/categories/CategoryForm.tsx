@@ -4,20 +4,26 @@ import BootstrapError from '../../BootstrapError';
 import disableSubmitButton from '../../utils/disableSubmitButton';
 import axios from 'axios';
 
-const categorySchema = Yup.object().shape({
+export const categorySchema = Yup.object().shape({
   name: Yup.string()
     .required('Pole nie może być puste')
     .min(3, 'Minimalna długość: 3 znaki')
     .max(50, 'Maksymalna długość: 50 znaków')
 })
 
-export default function CategoryForm({ onSubmit }: { onSubmit?: (category: Category) => void }) {
+interface CategoryFormProps {
+  onSubmit?: (category: Category) => void;
+  onError?: (error: string) => void;
+}
+
+export default function CategoryForm({ onSubmit, onError }: CategoryFormProps) {
   return (
     <Formik initialValues={{ name: '' }}
             validationSchema={categorySchema}
             onSubmit={(values, { setSubmitting }) => {
               axios.post<Category>('/api/categories', values)
                 .then((response) => onSubmit?.(response.data))
+                .catch((e) => onError?.(e.response.data.message))
                 .finally(() => setSubmitting(false));
             }}>
       {({ errors, touched, isSubmitting }) =>

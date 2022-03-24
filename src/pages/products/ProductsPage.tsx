@@ -25,7 +25,7 @@ export default function ProductsPage() {
   const searchParams = new URL(window.location.toString()).searchParams
   const navigate = useNavigate();
   const isAdmin = useAuthStore(state => state.user)?.admin ?? false;
-  const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(Number(searchParams.get('page') ?? 1));
   const [paginator, setPaginator] = useState<Paginator>();
   const [filters, setFilters] = useState<ProductFilters>(initFilters(searchParams));
   const [sort, setSort] = useState<string>(searchParams.get('sort') ?? '');
@@ -37,7 +37,7 @@ export default function ProductsPage() {
 
   const fetchProducts = useCallback(async () => {
     const searchParams = new URLSearchParams();
-    filters.category.forEach((category) => searchParams.append('category[]', category.toString()));
+    filters.category.forEach((category) => searchParams.append('category[]', category));
     if (filters.availability) {
       searchParams.append('availability', filters.availability);
     }
@@ -84,8 +84,8 @@ export default function ProductsPage() {
           }
           <PromiseHandler promise={categoriesPromise} onDone={() =>
             <Formik
-              initialValues={{ filters: initFilters(), sort: sort, sortDirection: sortDirection }}
-              onReset={(values) => {
+              initialValues={{ filters: {...filters}, sort: sort, sortDirection: sortDirection }}
+              onReset={(values, { setValues }) => {
                 setFilters(initFilters());
                 setSort('');
                 setSortDirection('');
@@ -129,7 +129,7 @@ export default function ProductsPage() {
                                   </thead>
                                   <tbody>
                                     {products.map((product) =>
-                                      <tr className='position-relative'>
+                                      <tr key={product.id} className='position-relative'>
                                         <td>
                                           <a href='#' className='stretched-link'>
                                             <span className='d-flex flex-center border rounded p-1 bg-white'
@@ -143,7 +143,7 @@ export default function ProductsPage() {
                                         <td>{product.name}</td>
                                         <td className='text-muted'>{product.category.name}</td>
                                         <td className='text-nowrap'>
-                                          <span className='text-muted'>{formatCurrency(product.price)}</span>
+                                          <span className='text-muted me-1'>{formatCurrency(product.price)}</span>
                                           <span className='text-orange'>zł</span>
                                         </td>
                                         <td>{product.amount}</td>

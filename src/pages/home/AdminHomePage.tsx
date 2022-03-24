@@ -100,7 +100,7 @@ function UnavailableProducts() {
           <tbody>
             {
               unavailableProducts.map((product) =>
-                <tr className='position-relative text-nowrap'>
+                <tr key={product.id} className='position-relative text-nowrap'>
                   <td style={{ width: '1%' }}>
                     <a href='#' className='stretched-link'>
                     <span className='d-flex flex-center border rounded p-1 bg-white me-2'

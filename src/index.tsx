@@ -15,6 +15,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import OrdersPage from './pages/orders/OrdersPage';
 import RegisterPage from './pages/RegisterPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
+import { useAuthStore } from './store/authStore';
+import AdminOrdersPage from './pages/orders/AdminOrdersPage';
 
 window.bootstrap = bootstrap;
 
@@ -38,9 +40,7 @@ ReactDOM.render(
               </ProtectedRoute>
             }/>
             <Route path='/zamowienia' element={
-              <ProtectedRoute>
-                <OrdersPage/>
-              </ProtectedRoute>
+              <ProtectedRoute resolve={() => useAuthStore.getState().user?.admin ? <AdminOrdersPage/> : <OrdersPage/>}/>
             }/>
             <Route path='/koszyk' element={
               <ProtectedRoute>

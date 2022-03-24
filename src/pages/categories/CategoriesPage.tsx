@@ -1,12 +1,14 @@
 import './CategoriesPage.scss';
-import CategoryForm from './CategoryForm';
+import CategoryForm, { categorySchema } from './CategoryForm';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import PromiseHandler from '../../components/PromiseHandler';
 import { Modal, OverlayTrigger, Toast, Tooltip } from 'react-bootstrap';
 import ModalButton from '../../components/ModalButton';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { Variant } from 'react-bootstrap/types';
+import BootstrapError from '../../BootstrapError';
+import disableSubmitButton from '../../utils/disableSubmitButton';
 
 interface ToastItem {
   id: number;
@@ -19,6 +21,17 @@ export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesPromise, setCategoriesPromise] = useState<Promise<void>>();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const addToast = (message: string, bg: Variant = 'success') => {
+    const toast: ToastItem = {
+      id: Date.now(),
+      bg,
+      message,
+      show: true,
+    }
+
+    setToasts([...toasts, toast]);
+  }
 
   const fetchCategories = async () => {
     const response = await axios.get<Category[]>('/api/categories?with_exists=true');
@@ -35,7 +48,10 @@ export default function CategoriesPage() {
         <h4 className='orange-underline'>Nowa kategoria</h4>
         <div className='card bg-light'>
           <div className='card-body'>
-            <CategoryForm onSubmit={(category) => setCategories([...categories, category])}/>
+            <CategoryForm onSubmit={(category) => {
+              addToast(`Dodano kategorię ${category.name}`);
+              setCategories([...categories, category]);
+            }} onError={(error) => addToast(`Błąd przy dodawaniu kategorii. ${error}`, 'danger')}/>
           </div>
         </div>
       </div>
@@ -56,9 +72,62 @@ export default function CategoriesPage() {
                     <td>{category.id}</td>
                     <td style={{ width: '98%' }}>{category.name}</td>
                     <td className='text-nowrap'>
-                      <button className='btn btn-icon edit-category'>
-                        <span className='material-icons text-orange'>edit</span>
-                      </button>
+                      <ModalButton button={(onClick) =>
+                        <button className='btn btn-icon edit-category' onClick={onClick}>
+                          <span className='material-icons text-orange'>edit</span>
+                        </button>
+                      } modal={(show, hide) =>
+                        <Modal onHide={hide} show={show} scrollable={true} centered={true}>
+                          <div className='modal-content'>
+                            <div className='modal-header'>
+                              <h5 className='modal-title'>Edycja kategorii</h5>
+                              <button type='button'
+                                      className='btn-close'
+                                      data-bs-dismiss='modal'
+                                      aria-label='Close'
+                                      onClick={hide}/>
+                            </div>
+                            <div className='modal-body'>
+                              <Formik initialValues={{ name: category.name }}
+                                      validationSchema={categorySchema}
+                                      onSubmit={(values, { setSubmitting }) => {
+                                        axios.patch<Category>(`/api/categories/${category.id}`, values)
+                                          .then((response) => {
+                                            const category = response.data;
+                                            addToast('Zapisano zmiany w kategorii');
+                                            setCategories(categories.map((_category) => {
+                                              if (_category.id === category.id) {
+                                                _category.name = category.name;
+                                              }
+                                              return _category;
+                                            }));
+                                            hide();
+                                          })
+                                          .catch((e) => addToast(`Błąd przy edycji kategorii. ${e.response.data.message}`))
+                                          .finally(() => setSubmitting(false));
+                                      }}>
+                                {({ errors, touched, isSubmitting }) =>
+                                  <Form noValidate>
+                                    <div>
+                                      <label htmlFor='name'>Nazwa</label>
+                                      <Field className='form-control'
+                                             name='name'
+                                             id='name'/>
+                                      <BootstrapError name='name'/>
+                                    </div>
+                                    <div className='text-end mt-3'>
+                                      <button type='submit'
+                                              className='btn btn-orange'
+                                              disabled={disableSubmitButton(isSubmitting, errors)}>Zapisz
+                                      </button>
+                                    </div>
+                                  </Form>
+                                }
+                              </Formik>
+                            </div>
+                          </div>
+                        </Modal>
+                      }/>
                       {category.products_exists ?
                         <OverlayTrigger placement='bottom' overlay={
                           <Tooltip>Kategoria musi być pusta, aby móc ją usunąć.</Tooltip>
@@ -89,25 +158,9 @@ export default function CategoriesPage() {
                                     axios.delete(`/api/categories/${category.id}`)
                                       .then(() => {
                                         setCategories(categories.filter((c) => c.id !== category.id));
-                                        setToasts([
-                                          ...toasts,
-                                          {
-                                            id: Date.now(),
-                                            bg: 'success',
-                                            message: `Usunięto kategorię ${category.name}`,
-                                            show: true,
-                                          }
-                                        ]);
+                                        addToast(`Usunięto kategorię ${category.name}`);
                                       })
-                                      .catch((e) => setToasts([
-                                        ...toasts,
-                                        {
-                                          id: Date.now(),
-                                          bg: 'danger',
-                                          message: e.response.data.message,
-                                          show: true,
-                                        }
-                                      ]))
+                                      .catch((e) => addToast(e.response.data.message, 'danger'))
                                       .finally(() => setSubmitting(false))
                                   }}>
                                     {({ isSubmitting }) =>
@@ -133,7 +186,7 @@ export default function CategoriesPage() {
           </div>
         }/>
       </div>
-      <div className='position-fixed bottom-0 end-0 p-3' style={{ zIndex: 11 }}>
+      <div className='toast-container position-fixed bottom-0 end-0 p-3' style={{ zIndex: 11 }}>
         {toasts.map((toast) =>
           <Toast key={toast.id}
                  autohide={true}

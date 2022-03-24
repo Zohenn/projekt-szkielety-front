@@ -17,7 +17,7 @@ export default function OrdersPage() {
   const fetchOrders = async (page: number) => {
     const searchParams = new URLSearchParams({ page: page.toString() });
     navigate({ pathname: location.pathname, search: searchParams.toString() }, { replace: true });
-    const response = await axios.get<PaginationFor<Order>>('/api/order', { params: searchParams });
+    const response = await axios.get<PaginationFor<Order>>('/api/orders', { params: searchParams });
     const { data, ...pagination } = response.data;
     data.forEach((order) => order.date = new Date(order.date));
     setPaginator(pagination);

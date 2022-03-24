@@ -30,7 +30,7 @@ export function ProductSortSection() {
             )}
         </div>
         <div className='mt-4'>
-          <div className='text-muted'>Kierunek</div>
+          <div className='text-muted'>Kolejność</div>
           {
             Object.entries(sortDirections).map(([option, label]) =>
               <div key={option} className='form-check'>
