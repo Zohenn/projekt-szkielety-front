@@ -7,6 +7,7 @@ import BootstrapError from '../../BootstrapError';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import disableSubmitButton from '../../utils/disableSubmitButton';
+import { Link } from 'react-router-dom';
 
 function LastOrders() {
   const [lastOrders, setLastOrders] = useState<Order[]>([]);
@@ -40,8 +41,7 @@ function LastOrders() {
             {
               lastOrders.map((order) =>
                 <tr key={order.id} className='position-relative text-nowrap'>
-                  {/* todo */}
-                  <td>{order.id}<a href='#' className='stretched-link'></a></td>
+                  <td>{order.id}<Link to={`/zamowienia/${order.id}`} className='stretched-link'/></td>
                   <td>{order.date.toLocaleString()}</td>
                   <td>
                     <span className='text-muted me-1'>{formatCurrency(order.value)}</span>
@@ -50,10 +50,10 @@ function LastOrders() {
                   <td>{order.payment_type.name}</td>
                   <td>
                       <span className='d-inline-flex align-items-center'>
-                          <span>{order.order_status.name}</span>
-                          <span className={`material-icons ms-2 icon-small ${orderStatusIcons[order.order_status.id].color}`}>
-                            {orderStatusIcons[order.order_status.id].icon}
-                          </span>
+                        <span>{order.order_status.name}</span>
+                        <span className={`material-icons ms-2 icon-small ${orderStatusIcons[order.order_status.id].color}`}>
+                          {orderStatusIcons[order.order_status.id].icon}
+                        </span>
                       </span>
                   </td>
                 </tr>
@@ -102,20 +102,20 @@ function UnavailableProducts() {
               unavailableProducts.map((product) =>
                 <tr key={product.id} className='position-relative text-nowrap'>
                   <td style={{ width: '1%' }}>
-                    <a href='#' className='stretched-link'>
-                    <span className='d-flex flex-center border rounded p-1 bg-white me-2'
-                          style={{ width: '3rem', height: '3rem' }}>
-                      <img className='w-100 h-100 object-fit-contain'
-                           src={`/storage/products/${product.image}`}
-                           alt={product.name}/>
-                    </span>
-                    </a>
+                    <Link to={`/produkty/edytuj/${product.id}`} className='stretched-link'>
+                      <span className='d-flex flex-center border rounded p-1 bg-white me-2'
+                            style={{ width: '3rem', height: '3rem' }}>
+                        <img className='w-100 h-100 object-fit-contain'
+                             src={`/storage/products/${product.image}`}
+                             alt={product.name}/>
+                      </span>
+                    </Link>
                   </td>
                   <td>{product.name}</td>
                   <td>{product.category.name}</td>
                   <td>
                     <span className='text-muted'>{formatCurrency(product.price)}</span>
-                    <span className='text-orange me-1'>zł</span>
+                    <span className='text-orange ms-1'>zł</span>
                   </td>
                 </tr>
               )

@@ -7,6 +7,7 @@ interface Category{
 interface Product{
   id: number;
   name: string;
+  category_id: number;
   category: Category;
   amount: number;
   price: number;

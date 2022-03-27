@@ -12,11 +12,15 @@ export default function CartPage() {
   const { items, removeFromCart } = useCartStore();
   const [products, setProducts] = useState<Product[]>([]);
   const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>([]);
+  const [productsPromise, setProductsPromise] = useState<Promise<void>>();
+  const [paymentTypesPromise, setPaymentTypesPromise] = useState<Promise<void>>();
 
   const cartValue = useMemo(
     () => products.reduce((value, product) => value + product.price, 0),
     [products]
   );
+
+  const promises = useMemo(() => Promise.all([productsPromise, paymentTypesPromise]), [productsPromise, paymentTypesPromise]);
 
   const fetchCartProducts = async () => {
     if (items.length > 0) {
@@ -32,9 +36,6 @@ export default function CartPage() {
     setPaymentTypes(response.data);
   }
 
-  const [productsPromise, setProductsPromise] = useState<Promise<void>>();
-  const [paymentTypesPromise, setPaymentTypesPromise] = useState<Promise<void>>();
-
   useEffect(() => {
     setProductsPromise(fetchCartProducts());
     setPaymentTypesPromise(fetchPaymentTypes());
@@ -45,7 +46,7 @@ export default function CartPage() {
       <Helmet>
         <title>Koszyk</title>
       </Helmet>
-      <PromiseHandler promise={productsPromise} onDone={() =>
+      <PromiseHandler promise={promises} onDone={() =>
         <>
           <div className='row'>
             <div className='col-12 col-md-8'>

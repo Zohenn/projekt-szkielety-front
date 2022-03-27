@@ -1,0 +1,7 @@
+.has-image[role=button] > span, .has-image[role=button] > .invalid-feedback {
+  display: none !important;
+}
+
+#image-preview {
+  object-fit: contain;
+}

@@ -3,35 +3,19 @@ import CategoryForm, { categorySchema } from './CategoryForm';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import PromiseHandler from '../../components/PromiseHandler';
-import { Modal, OverlayTrigger, Toast, Tooltip } from 'react-bootstrap';
+import { Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import ModalButton from '../../components/ModalButton';
 import { Formik, Form, Field } from 'formik';
-import { Variant } from 'react-bootstrap/types';
 import BootstrapError from '../../BootstrapError';
 import disableSubmitButton from '../../utils/disableSubmitButton';
-
-interface ToastItem {
-  id: number;
-  message: string;
-  bg: Variant;
-  show: boolean;
-}
+import useToasts from '../../hooks/useToasts';
+import Toasts from '../../components/Toasts';
+import { Helmet } from 'react-helmet-async';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesPromise, setCategoriesPromise] = useState<Promise<void>>();
-  const [toasts, setToasts] = useState<ToastItem[]>([]);
-
-  const addToast = (message: string, bg: Variant = 'success') => {
-    const toast: ToastItem = {
-      id: Date.now(),
-      bg,
-      message,
-      show: true,
-    }
-
-    setToasts([...toasts, toast]);
-  }
+  const { toasts, addToast, removeToast } = useToasts();
 
   const fetchCategories = async () => {
     const response = await axios.get<Category[]>('/api/categories?with_exists=true');
@@ -44,6 +28,9 @@ export default function CategoriesPage() {
 
   return (
     <div className='row gy-3'>
+      <Helmet>
+        <title>Kategorie</title>
+      </Helmet>
       <div className='col-12 col-sm-5 col-lg-3'>
         <h4 className='orange-underline'>Nowa kategoria</h4>
         <div className='card bg-light'>
@@ -186,29 +173,7 @@ export default function CategoriesPage() {
           </div>
         }/>
       </div>
-      <div className='toast-container position-fixed bottom-0 end-0 p-3' style={{ zIndex: 11 }}>
-        {toasts.map((toast) =>
-          <Toast key={toast.id}
-                 autohide={true}
-                 bg={toast.bg}
-                 className='align-items-center text-white border-0'
-                 delay={3000}
-                 onClose={() => {
-                   const _toasts = [...toasts];
-                   _toasts.find((_toast) => _toast.id === toast.id)!.show = false;
-                   setToasts(_toasts);
-                 }}
-                 show={toast.show}>
-            <div className='d-flex'>
-              <div className='toast-body'>{toast.message}</div>
-              <button type='button'
-                      className='btn-close btn-close-white me-2 m-auto'
-                      data-bs-dismiss='toast'
-                      aria-label='Close'/>
-            </div>
-          </Toast>
-        )}
-      </div>
+      <Toasts toasts={toasts} removeToast={removeToast}/>
     </div>
   )
 }

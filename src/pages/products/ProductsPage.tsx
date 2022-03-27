@@ -12,6 +12,7 @@ import { Form, Formik } from 'formik';
 import ReactDOM from 'react-dom';
 import { useAuthStore } from '../../store/authStore';
 import formatCurrency from '../../utils/formatCurrency';
+import useCategories from '../../hooks/useCategories';
 
 export default function ProductsPage() {
   const initFilters: (searchParams?: URLSearchParams) => ProductFilters = (searchParams) => {
@@ -32,8 +33,7 @@ export default function ProductsPage() {
   const [sortDirection, setSortDirection] = useState<string>(searchParams.get('sort_dir') ?? '');
   const [products, setProducts] = useState<Product[]>([]);
   const [productsPromise, setProductsPromise] = useState<Promise<any>>();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesPromise, setCategoriesPromise] = useState<Promise<any>>();
+  const [categories, categoriesPromise] = useCategories();
 
   const fetchProducts = useCallback(async () => {
     const searchParams = new URLSearchParams();
@@ -56,18 +56,9 @@ export default function ProductsPage() {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }, [filters, sort, sortDirection, page]);
 
-  const fetchCategories = async () => {
-    const response = await axios.get('/api/categories');
-    setCategories(response.data);
-  }
-
   useEffect(() => {
     setProductsPromise(fetchProducts());
   }, [fetchProducts]);
-
-  useEffect(() => {
-    setCategoriesPromise(fetchCategories());
-  }, []);
 
   return (
     <>
@@ -131,14 +122,14 @@ export default function ProductsPage() {
                                     {products.map((product) =>
                                       <tr key={product.id} className='position-relative'>
                                         <td>
-                                          <a href='#' className='stretched-link'>
+                                          <Link to={`/produkty/edytuj/${product.id}`} className='stretched-link'>
                                             <span className='d-flex flex-center border rounded p-1 bg-white'
                                                   style={{ width: '3rem', height: '3rem' }}>
                                               <img className='w-100 h-100 object-fit-contain'
                                                    src={`/storage/products/${product.image}`}
                                                    alt={product.name}/>
                                             </span>
-                                          </a>
+                                          </Link>
                                         </td>
                                         <td>{product.name}</td>
                                         <td className='text-muted'>{product.category.name}</td>

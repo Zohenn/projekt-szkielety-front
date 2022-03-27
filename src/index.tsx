@@ -18,6 +18,7 @@ import CategoriesPage from './pages/categories/CategoriesPage';
 import { useAuthStore } from './store/authStore';
 import AdminOrdersPage from './pages/orders/AdminOrdersPage';
 import OrderDetailsPage from './pages/orders/OrderDetailsPage';
+import AddProductPage from './pages/products/AddProductPage';
 
 window.bootstrap = bootstrap;
 
@@ -35,6 +36,16 @@ ReactDOM.render(
           <Route path='/' element={<App/>}>
             <Route index element={<HomePage/>}/>
             <Route path='/produkty' element={<ProductsPage/>}/>
+            <Route path='/produkty/dodaj' element={
+              <ProtectedRoute check={(user) => user.admin}>
+                <AddProductPage/>
+              </ProtectedRoute>
+            }/>
+            <Route path='/produkty/edytuj/:id' element={
+              <ProtectedRoute check={(user) => user.admin}>
+                <AddProductPage/>
+              </ProtectedRoute>
+            }/>
             <Route path='/kategorie' element={
               <ProtectedRoute>
                 <CategoriesPage/>
