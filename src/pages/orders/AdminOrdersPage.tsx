@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import usePaymentTypes from '../../hooks/usePaymentTypes';
 import PromiseHandler from '../../components/PromiseHandler';
 import useOrderStatuses from '../../hooks/useOrderStatuses';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Pagination from '../../components/Pagination';
 import formatCurrency from '../../utils/formatCurrency';
@@ -51,6 +51,7 @@ export default function AdminOrdersPage() {
     navigate({ pathname: location.pathname, search: searchParams.toString() }, { replace: true });
     const response = await axios.get<PaginationFor<Order>>('/api/orders', { params: searchParams });
     const { data, ...pagination } = response.data;
+    data.forEach((order) => order.date = new Date(order.date));
     setPaginator(pagination);
     setOrders(data);
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
@@ -115,9 +116,8 @@ export default function AdminOrdersPage() {
               <tbody>
                 {orders.map((order) =>
                   <tr key={order.id} className='position-relative'>
-                    <td>{order.id}<a href='#' className='stretched-link'></a>
-                    </td>
-                    <td>{new Date(order.date).toLocaleString('pl-PL')}</td>
+                    <td>{order.id}<Link to={`/zamowienia/${order.id}`} className='stretched-link'/></td>
+                    <td>{order.date.toLocaleString('pl-PL')}</td>
                     <td>
                       <span className='text-muted me-1'>{formatCurrency(order.value)}</span>
                       <span className='text-orange'>zł</span>

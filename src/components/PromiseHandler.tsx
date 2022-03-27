@@ -1,33 +1,41 @@
 import { ReactElement, useEffect, useState } from 'react';
 import { Spinner } from 'react-bootstrap';
+import ReactDOM from 'react-dom';
 
-interface PromiseHandlerProps{
+interface PromiseHandlerProps {
   promise: Promise<any> | undefined;
   onDone: () => ReactElement;
+  onError?: (e: any) => ReactElement;
 }
 
-enum PromiseState{
+enum PromiseState {
   pending, settled, error
 }
 
-export default function PromiseHandler({ promise, onDone }: PromiseHandlerProps){
+export default function PromiseHandler({ promise, onDone, onError }: PromiseHandlerProps) {
   const [promiseState, setPromiseState] = useState<PromiseState>(PromiseState.pending);
+  const [error, setError] = useState();
 
   useEffect(() => {
     setPromiseState(PromiseState.pending);
-    if(promise){
-      promise.then(() => setPromiseState(PromiseState.settled)).catch(() => setPromiseState(PromiseState.error));
+    if (promise) {
+      promise.then(() => setPromiseState(PromiseState.settled)).catch((e) => {
+        ReactDOM.unstable_batchedUpdates(() => {
+          setError(e);
+          setPromiseState(PromiseState.error);
+        })
+      });
     }
   }, [promise]);
 
   let element: ReactElement;
 
-  switch(promiseState){
+  switch (promiseState) {
     case PromiseState.settled:
       element = onDone();
       break;
     case PromiseState.error:
-      element = <span>W trakcie ładowania wystąpił błąd</span>;
+      element = onError?.(error) ?? <span>W trakcie ładowania wystąpił błąd</span>;
       break;
     default:
       element = <div className='w-100 h-100 flex-grow-1 d-flex flex-center'>

@@ -22,8 +22,7 @@ export default function OrderCard({ order }: { order: Order }) {
         {
           order.details.map((detail, index) =>
             <div key={detail.id}
-                 className={`d-flex align-items-center py-2 ${index !== order.details.length - 1 ? 'border-bottom' : ''}`}
-                 style={{ borderColor: 'var(--bs-orange)!important' }}>
+                 className={`d-flex align-items-center py-2 ${index !== order.details.length - 1 ? 'border-bottom' : ''}`}>
               <div className='ms-2 ms-sm-3' style={{ minWidth: '16px' }}>{index + 1}</div>
               <div className='d-flex align-items-center ms-1 ms-sm-2 flex-shrink-0 p-1 cart-item-image border rounded bg-white'>
                 <img src={`/storage/products/${detail.product.image}`}
@@ -53,8 +52,8 @@ export default function OrderCard({ order }: { order: Order }) {
             <>
               {order.assembly ? <span className='text-orange mx-2'>|</span> : null}
               <span className='d-inline-flex align-items-center'>
-                  <span className='fw-500'>Instalacja systemu</span>
-                  <span className='material-icons text-success ms-2' style={{ fontSize: '20px' }}>done</span>
+                <span className='fw-500'>Instalacja systemu</span>
+                <span className='material-icons text-success ms-2' style={{ fontSize: '20px' }}>done</span>
               </span>
             </> : null
         }

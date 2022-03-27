@@ -17,6 +17,7 @@ import RegisterPage from './pages/RegisterPage';
 import CategoriesPage from './pages/categories/CategoriesPage';
 import { useAuthStore } from './store/authStore';
 import AdminOrdersPage from './pages/orders/AdminOrdersPage';
+import OrderDetailsPage from './pages/orders/OrderDetailsPage';
 
 window.bootstrap = bootstrap;
 
@@ -41,6 +42,11 @@ ReactDOM.render(
             }/>
             <Route path='/zamowienia' element={
               <ProtectedRoute resolve={() => useAuthStore.getState().user?.admin ? <AdminOrdersPage/> : <OrdersPage/>}/>
+            }/>
+            <Route path='/zamowienia/:id' element={
+              <ProtectedRoute check={(user) => user.admin}>
+                <OrderDetailsPage/>
+              </ProtectedRoute>
             }/>
             <Route path='/koszyk' element={
               <ProtectedRoute>
