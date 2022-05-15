@@ -63,7 +63,7 @@ export default function AddProductPage() {
       </Helmet>
       <h4 className='orange-underline'>{id ? 'Edycja produktu' : 'Nowy produkt'}</h4>
       <PromiseHandler promise={promises} onDone={() =>
-        <Formik initialValues={{
+        (product || !id) ? <Formik initialValues={{
           image: product?.image ?? '',
           name: product?.name ?? '',
           category_id: product?.category_id.toString() ?? '',
@@ -206,7 +206,7 @@ export default function AddProductPage() {
               </div>
             </Form>
           }
-        </Formik>
+        </Formik> : <></>
       }/>
       <Toasts toasts={toasts} removeToast={removeToast}/>
     </>

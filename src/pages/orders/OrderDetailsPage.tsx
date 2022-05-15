@@ -38,7 +38,7 @@ export default function OrderDetailsPage() {
         <title>Szczegóły zamówienia</title>
       </Helmet>
       <PromiseHandler promise={promises} onDone={() =>
-        <>
+        order ? <>
           <h4 className='orange-underline'>Szczegóły zamówienia</h4>
           <div className='bg-light border rounded p-3 mb-4'>
             <div className='d-flex flex-wrap'>
@@ -119,6 +119,7 @@ export default function OrderDetailsPage() {
                 <Formik key={orderStatus.id} initialValues={{}} onSubmit={(values, { setSubmitting }) => {
                   axios.patch<Order>(`/api/orders/${_order.id}/changeStatus`, { status: orderStatus.id })
                     .then((order) => {
+                      order.data.date = new Date(order.data.date);
                       setOrder(order.data);
                       addToast('Zmieniono status zamówienia.');
                     })
@@ -139,7 +140,7 @@ export default function OrderDetailsPage() {
               )}
             </div>
           </div>
-        </>
+        </> : <></>
       } onError={(e) =>
         <span>{e.response?.status === 404 ? "Zamówienie o podanym id nie istnieje." : "W trakcie ładowania wystąpił błąd."}</span>
       }/>
