@@ -54,7 +54,7 @@ export default function OrderForm({ paymentTypes }: OrderFormProps) {
                     ...rest,
                     payment_type_id: Number(values.payment_type),
                     products: [...useCartStore.getState().items],
-                    ...useCartStore.getState().services,
+                    services: [...useCartStore.getState().services],
                   }
                   setError('');
                   axios.post('/api/orders', _values)

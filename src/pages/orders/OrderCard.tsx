@@ -1,3 +1,4 @@
+import React from 'react';
 import formatCurrency from '../../utils/formatCurrency';
 import { orderStatusIcons } from '../../utils/orderStatusIcons';
 
@@ -40,24 +41,15 @@ export default function OrderCard({ order }: { order: Order }) {
       </div>
       <hr className='mt-0 mb-2 text-orange opacity-100'/>
       <div className='d-flex justify-content-end'>
-        {
-          order.assembly ?
+        {order.services.map((service) =>
+          <React.Fragment key={service.service.id}>
             <span className='d-inline-flex align-items-center ms-2'>
-              <span className='fw-500'>Montaż zestawu</span>
+              <span className='fw-500'>{service.service.name}</span>
               <span className='material-icons text-success ms-2' style={{ fontSize: '20px' }}>done</span>
-            </span> : null
-        }
-        {
-          order.os_installation ?
-            <>
-              {order.assembly ? <span className='text-orange mx-2'>|</span> : null}
-              <span className='d-inline-flex align-items-center'>
-                <span className='fw-500'>Instalacja systemu</span>
-                <span className='material-icons text-success ms-2' style={{ fontSize: '20px' }}>done</span>
-              </span>
-            </> : null
-        }
-        {(order.assembly || order.os_installation) ? <span className='text-orange mx-2'>|</span> : null}
+            </span>
+            <span className='text-orange mx-2'>|</span>
+          </React.Fragment>
+        )}
         <span className='text-spacer fw-500'>Razem:</span>
         <span className='fw-500'>
           <span className='text-muted'>{formatCurrency(order.value)}</span>

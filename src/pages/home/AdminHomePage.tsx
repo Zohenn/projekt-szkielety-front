@@ -8,6 +8,8 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import disableSubmitButton from '../../utils/disableSubmitButton';
 import { Link } from 'react-router-dom';
+import useServices from '../../hooks/useServices';
+import { ObjectShape } from 'yup/lib/object';
 
 function LastOrders() {
   const [lastOrders, setLastOrders] = useState<Order[]>([]);
@@ -133,34 +135,32 @@ function UnavailableProducts() {
   )
 }
 
-const servicesSchema = Yup.object().shape({
-  assembly: Yup.number()
-    .required('Pole nie może być puste')
-    .moreThan(0, 'Cena musi być większa od 0')
-    .lessThan(10000, 'Cena musi być mniejsza od 10000'),
-  os_installation: Yup.number()
-    .required('Pole nie może być puste')
-    .moreThan(0, 'Cena musi być większa od 0')
-    .lessThan(10000, 'Cena musi być mniejsza od 10000'),
-})
+// const servicesSchema = Yup.object().shape({
+//   assembly: Yup.number()
+//     .required('Pole nie może być puste')
+//     .moreThan(0, 'Cena musi być większa od 0')
+//     .lessThan(10000, 'Cena musi być mniejsza od 10000'),
+//   os_installation: Yup.number()
+//     .required('Pole nie może być puste')
+//     .moreThan(0, 'Cena musi być większa od 0')
+//     .lessThan(10000, 'Cena musi być mniejsza od 10000'),
+// })
 
 function PriceList() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [servicesPromise, setServicesPromise] = useState<Promise<void>>();
+  const [services, servicesPromise] = useServices();
 
   const initialValues = services.reduce((previousValue, service) => {
-    previousValue[service.id] = service.price;
+    previousValue[service.id.toString()] = service.price;
     return previousValue;
-  }, {} as { [k in Services]: number });
+  }, {} as Record<string, number>);
 
-  const fetchServices = async () => {
-    const response = await axios.get<Service[]>('/api/services');
-    setServices(response.data);
-  }
-
-  useEffect(() => {
-    setServicesPromise(fetchServices());
-  }, []);
+  const servicesSchema = Yup.object().shape(services.reduce((previousValue, service) => {
+    previousValue[service.id.toString()] = Yup.number()
+      .required('Pole nie może być puste')
+      .moreThan(0, 'Cena musi być większa od 0')
+      .lessThan(10000, 'Cena musi być mniejsza od 10000');
+    return previousValue;
+  }, {} as ObjectShape))
 
   return (
     <PromiseHandler promise={servicesPromise} onDone={() =>
@@ -170,7 +170,10 @@ function PriceList() {
                   validationSchema={servicesSchema}
                   validateOnMount
                   onSubmit={(values, { setSubmitting }) => {
-                    axios.patch('/api/services', values)
+                    const requestData = {
+                      services: Object.keys(values).map((key) => ({ id: Number(key), price: values[key] })),
+                    };
+                    axios.patch('/api/services', requestData)
                       .then(() => console.log('jest git'))
                       .catch((e) => console.log(e))
                       .finally(() => setSubmitting(false))
@@ -181,14 +184,14 @@ function PriceList() {
                   {
                     services.map((service) =>
                       <div key={service.id} className='col-12 col-sm-6'>
-                        <label htmlFor={service.id}>{service.name}</label>
+                        <label htmlFor={service.id.toString()}>{service.name}</label>
                         <div className='input-group'>
                           <Field type='number'
                                  className={`form-control ${!errors[service.id] || !touched[service.id] || 'is-invalid'}`}
                                  name={service.id}
                                  required/>
                           <span className='input-group-text'>zł</span>
-                          <BootstrapError name={service.id}/>
+                          <BootstrapError name={service.id.toString()}/>
                         </div>
                       </div>
                     )

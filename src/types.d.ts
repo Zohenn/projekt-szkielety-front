@@ -15,10 +15,8 @@ interface Product{
   image: string;
 }
 
-type Services = 'assembly' | 'os_installation';
-
 interface Service {
-  id: Services;
+  id: number;
   name: string;
   price: number;
 }
@@ -39,9 +37,11 @@ interface OrderDetails {
   product: Product;
 }
 
-type OrderServices = Record<Services, boolean>;
+interface OrderServices {
+  service: Service;
+}
 
-interface Order extends OrderServices{
+interface Order {
   id: number;
   name: string;
   surname: string;
@@ -56,6 +56,7 @@ interface Order extends OrderServices{
 
   // [k: Services]: boolean;
   details: OrderDetails[];
+  services: OrderServices[];
 }
 
 interface PaginationLink{

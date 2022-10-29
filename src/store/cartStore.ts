@@ -3,21 +3,16 @@ import { persist } from 'zustand/middleware';
 
 interface CartStore {
   items: number[];
-  services: {
-    [k in Services]: boolean;
-  }
+  services: number[];
   addToCart: (id: number) => void;
   removeFromCart: (id: number) => void;
-  changeService: (name: Services, value: boolean) => void;
+  changeService: (id: number, value: boolean) => void;
   clear: () => void;
 }
 
 export const useCartStore = create<CartStore>(persist((set, get) => ({
   items: [],
-  services: {
-    assembly: false,
-    os_installation: false,
-  },
+  services: [],
 
   addToCart: (id) => {
     const items = get().items;
@@ -30,11 +25,12 @@ export const useCartStore = create<CartStore>(persist((set, get) => ({
     set({ items: get().items.filter((item) => item !== id) });
   },
 
-  changeService: (name, value) => {
-    set({ services: { ...get().services, [name]: value } });
+  changeService: (id, value) => {
+    const services = get().services;
+    set({ services: value ? [...services, id] : services.filter((item) => item !== id) });
   },
 
   clear: () => {
-    set({ services: { assembly: false, os_installation: false }, items: [] })
+    set({ services: [], items: [] })
   }
 }), { name: 'cart' }));
