@@ -37,7 +37,7 @@ export const useAuthStore = create<AuthState>(persist((set, get) => ({
     if(token){
       try{
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        const response = await axios.get<User>('/api/user');
+        const response = await axios.get<User>('/api/auth/user');
         set({ user: response.data });
       }catch{
         get().cleanup();
@@ -46,13 +46,13 @@ export const useAuthStore = create<AuthState>(persist((set, get) => ({
   },
 
   signIn: async(email: string, password: string) => {
-    const response = await axios.post<LoginResponse>('/api/login', { email, password });
+    const response = await axios.post<LoginResponse>('/api/auth/login', { email, password });
     axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
     set({ user: response.data.user, token: response.data.token });
   },
 
   signOut: () => {
-    axios.post('/api/logout');
+    axios.post('/api/auth/logout');
     get().cleanup();
   },
 

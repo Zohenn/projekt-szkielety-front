@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.scss';
 import Navbar from './Navbar';
 import { Outlet } from 'react-router-dom';
@@ -7,7 +7,10 @@ import PromiseHandler from './components/PromiseHandler';
 
 function App(){
   const checkAuthState = useAuthStore(state => state.checkAuthState);
-  const [authStatePromise] = useState<Promise<any>>(checkAuthState());
+  const [authStatePromise, setAuthStatePromise] = useState<Promise<any>>();
+
+  useEffect(() => setAuthStatePromise(checkAuthState()), []);
+
   return (
     <PromiseHandler promise={authStatePromise} onDone={() =>
       <>

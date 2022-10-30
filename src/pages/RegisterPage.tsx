@@ -28,12 +28,12 @@ export default function RegisterPage() {
                       validationSchema={registerSchema}
                       validateOnMount
                       onSubmit={(values, { setSubmitting, setFieldError }) => {
-                        axios.post('/api/register', values)
+                        axios.post('/api/auth/register', values)
                           .then(() => navigate('/'))
                           .catch((e) => {
                             const { data } = e.response;
                             Object.entries<string[]>(data.errors).forEach(([field, errors]) => {
-                              setFieldError(field, errors[0]);
+                              setFieldError(field.toLowerCase(), errors[0]);
                             })
                           })
                           .finally(() => setSubmitting(false))
