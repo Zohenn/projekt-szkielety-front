@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import formatCurrency from '../../utils/formatCurrency';
 import { orderStatusIcons } from '../../utils/orderStatusIcons';
 import axios from 'axios';
@@ -10,6 +10,8 @@ import disableSubmitButton from '../../utils/disableSubmitButton';
 import { Link } from 'react-router-dom';
 import useServices from '../../hooks/useServices';
 import { ObjectShape } from 'yup/lib/object';
+import useToasts from '../../hooks/useToasts';
+import Toasts from '../../components/Toasts';
 
 function LastOrders() {
   const [lastOrders, setLastOrders] = useState<Order[]>([]);
@@ -148,6 +150,7 @@ function UnavailableProducts() {
 
 function PriceList() {
   const [services, servicesPromise] = useServices();
+  const { toasts, addToast, removeToast } = useToasts();
 
   const initialValues = services.reduce((previousValue, service) => {
     previousValue[service.id.toString()] = service.price;
@@ -174,8 +177,8 @@ function PriceList() {
                       services: Object.keys(values).map((key) => ({ id: Number(key), price: values[key] })),
                     };
                     axios.patch('/api/services', requestData)
-                      .then(() => console.log('jest git'))
-                      .catch((e) => console.log(e))
+                      .then(() => addToast('Zapisano cennik usług.'))
+                      .catch((e) => addToast('Przy zapisywaniu cennika usług wystąpił błąd.', 'danger'))
                       .finally(() => setSubmitting(false))
                   }}>
             {({ errors, touched, isSubmitting }) =>
@@ -208,6 +211,7 @@ function PriceList() {
             }
           </Formik>
         </div>
+        <Toasts toasts={toasts} removeToast={removeToast}/>
       </div>
     }/>
   )
